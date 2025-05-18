@@ -20,13 +20,15 @@ import br.com.fiap.softekfiap.model.QuestionnaireEntry
 import br.com.fiap.softekfiap.ui.components.ReviewQuestionnaireSummary
 import br.com.fiap.softekfiap.util.SessionManager
 import br.com.fiap.softekfiap.util.podeResponderQuestionario
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 @Composable
 fun HomeScreen(navController: NavController, userId: Int?) {
     var selectedIndex by remember { mutableStateOf(0) }
     val context = LocalContext.current
-
+    val username = SessionManager.getUsername(context) ?: "usuário"
     val tabs = listOf("Início", "Questionário", "Histórico")
 
     Scaffold(
@@ -89,9 +91,9 @@ fun HomeScreen(navController: NavController, userId: Int?) {
                 verticalArrangement = Arrangement.Center
             ) {
                 when (selectedIndex) {
-                    0 -> HomeTab()
+                    0 -> HomeTab(username)
                     1 -> QuestionnaireTab(navController)
-                    2 -> PlaceholderTab("Histórico (em breve)")
+                    2 -> HistoryTab(navController)
                 }
             }
         }
@@ -99,8 +101,8 @@ fun HomeScreen(navController: NavController, userId: Int?) {
 }
 
 @Composable
-fun HomeTab() {
-    Text("Bem-vindo(a) ao seu espaço de bem-estar 🧠", style = MaterialTheme.typography.h6)
+fun HomeTab(username: String?) {
+    Text("Olá, $username! Seja bem-vindo ao seu espaço de bem-estar 🧠", style = MaterialTheme.typography.h6)
     Spacer(modifier = Modifier.height(16.dp))
     Text("Use o menu abaixo para acessar as funções.")
 }
@@ -110,45 +112,52 @@ fun QuestionnaireTab(navController: NavController) {
 
     val context = LocalContext.current
     val userId = SessionManager.getIdUsuario(context)
-    val today = LocalDate.now().toString()
-    val questionnaireDao = AppDatabase.getInstance(context).questionnaireDao()
 
+    var entriesThisMonth by remember { mutableStateOf<List<QuestionnaireEntry>>(emptyList()) }
     var canAnswer by remember { mutableStateOf<Boolean?>(null) }
     var lastEntry by remember { mutableStateOf<QuestionnaireEntry?>(null) }
-    LaunchedEffect(Unit) {
-        val entries = questionnaireDao.getEntriesThisMonth(userId, today)
-        lastEntry = entries.firstOrNull()
-        canAnswer = podeResponderQuestionario(entries)
+    var showReview by remember { mutableStateOf(false) }
+
+
+    LaunchedEffect(userId) {
+        withContext(Dispatchers.IO) {
+            val dao = AppDatabase.getInstance(context).questionnaireDao()
+            val entries = dao.getEntriesThisMonth(userId, LocalDate.now().toString())
+            entriesThisMonth = entries
+            lastEntry = entries.firstOrNull()
+            canAnswer = podeResponderQuestionario(entries)
+        }
     }
 
-// Enquanto verifica, pode mostrar loading
     if (canAnswer == null) {
         CircularProgressIndicator()
     } else if (canAnswer == true) {
-        // Mostra botão para iniciar o questionário
         Button(onClick = { navController.navigate("questionnaire") }) {
             Text("Responder questionário")
         }
     } else {
-        // Mostra o histórico do último questionário
         lastEntry?.let { entry ->
-            // Exibe as respostas do último entry.respostasJson
-            ReviewQuestionnaireSummary(entry)
+            if (showReview) {
+                QuestionnaireReviewOnly(
+                    respostasJson = entry.respostasJson,
+                    date = entry.date
+                )
+            } else {
+                ReviewQuestionnaireSummary(entry)
+                Text(
+                    "Você já respondeu o questionário recentemente. Retorne daqui a alguns dias.",
+                    color = Color.Gray, modifier = Modifier.padding(top = 12.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(onClick = { navController.navigate("historico") }) {
+                    Text("Ver histórico de respostas")
+                }
+            }
         }
-        Text(
-            "Você já respondeu o questionário recentemente. Retorne daqui a alguns dias.",
-            color = Color.Gray, modifier = Modifier.padding(top = 12.dp)
-        )
     }
 }
 
-
 @Composable
-fun PlaceholderTab(text: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text, style = MaterialTheme.typography.subtitle1)
-    }
+fun HistoryTab(navController: NavController) {
+    HistoryScreen(navController)
 }

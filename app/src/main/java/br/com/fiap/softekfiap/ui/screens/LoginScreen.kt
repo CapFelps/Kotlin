@@ -34,8 +34,8 @@ fun LoginScreen(navController: NavController) {
         loginResult?.let {
             if (it.isSuccess) {
                 val user = it.getOrNull()
-                SessionManager.salvarIdUsuario(context, user!!.id)
-                Toast.makeText(context, "Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
+                SessionManager.salvarUsuario(context, user!!.id, user.username)
+                Toast.makeText(context, "${user.username}, Login realizado com sucesso!", Toast.LENGTH_SHORT).show()
                 // Ir para próxima tela (ex: checkin)
                 navController.navigate("checkin?userId=${user.id}") {
                     popUpTo("login") { inclusive = true }

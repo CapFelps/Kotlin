@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import br.com.fiap.softekfiap.ui.screens.LoginScreen
 import br.com.fiap.softekfiap.ui.screens.CheckinScreen
+import br.com.fiap.softekfiap.ui.screens.HistoryScreen
 import br.com.fiap.softekfiap.ui.screens.HomeScreen
 import br.com.fiap.softekfiap.ui.screens.QuestionnaireScreen
 import br.com.fiap.softekfiap.ui.screens.RegisterScreen
@@ -39,5 +40,6 @@ fun AppNavGraph(navController: NavHostController) {
             HomeScreen(navController, userId)
         }
         composable("questionnaire") { QuestionnaireScreen(navController) }
+        composable("historico") { HistoryScreen(navController) }
     }
 }

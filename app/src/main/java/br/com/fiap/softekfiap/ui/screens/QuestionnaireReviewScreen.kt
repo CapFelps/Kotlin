@@ -201,3 +201,73 @@ fun ReviewSection(
         }
     }
 }
+
+@Composable
+fun QuestionnaireReviewOnly(respostasJson: String, date: String) {
+    val respostas = remember(respostasJson) {
+        Gson().fromJson(respostasJson, Map::class.java) as Map<String, Any?>
+    }
+
+    // Pega os grupos do JSON
+    val cargaDeTrabalho = respostas["cargaDeTrabalho"] as? Map<*, *>
+    val sinaisDeAlerta = respostas["sinaisDeAlerta"] as? Map<*, *>
+    val climaRelacionamento = respostas["climaRelacionamento"] as? Map<*, *>
+    val comunicacao = respostas["comunicacao"] as? Map<*, *>
+    val relacaoLideranca = respostas["relacaoLideranca"] as? Map<*, *>
+
+    Column(
+        Modifier
+            .padding(20.dp)
+    ) {
+        ReviewSection(
+            title = "Fatores de Carga de Trabalho",
+            questions = listOf(
+                "Como você avalia sua carga de trabalho?" to (cargaDeTrabalho?.get("carga1")?.toString() ?: ""),
+                "Sua carga de trabalho afeta sua qualidade de vida?" to (cargaDeTrabalho?.get("carga2")?.toString() ?: ""),
+                "Você trabalha além do seu horário regular?" to (cargaDeTrabalho?.get("carga3")?.toString() ?: "")
+            )
+        )
+
+        ReviewSection(
+            title = "Sinais de Alerta",
+            questions = listOf(
+                "Você tem apresentado sintomas como insônia, irritabilidade ou cansaço extremo?" to (sinaisDeAlerta?.get("sinais1")?.toString() ?: ""),
+                "Você sente que sua saúde mental prejudica sua produtividade no trabalho?" to (sinaisDeAlerta?.get("sinais2")?.toString() ?: "")
+            )
+        )
+
+        ReviewSection(
+            title = "Clima – Relacionamento",
+            questions = listOf(
+                "Como está o seu relacionamento com seu chefe numa escala de 1 a 5? (01 - ruim, 05 - ótimo)" to (climaRelacionamento?.get("relacionamento1")?.toString() ?: ""),
+                "Como está o seu relacionamento com seus colegas de trabalho numa escala de 1 a 5? (01 - ruim, 05 - ótimo)" to (climaRelacionamento?.get("relacionamento2")?.toString() ?: ""),
+                "Sinto que sou tratado(a) com respeito pelos meus colegas de trabalho." to (climaRelacionamento?.get("relacionamento3")?.toString() ?: ""),
+                "Consigo me relacionar de forma saudável e colaborativa com minha equipe." to (climaRelacionamento?.get("relacionamento4")?.toString() ?: ""),
+                "Tenho liberdade para expressar minhas opiniões sem medo de retaliações." to (climaRelacionamento?.get("relacionamento5")?.toString() ?: ""),
+                "Me sinto acolhido(a) a parte do time onde trabalho." to (climaRelacionamento?.get("relacionamento6")?.toString() ?: ""),
+                "Sinto que existe espírito de cooperação entre os colaboradores." to (climaRelacionamento?.get("relacionamento7")?.toString() ?: "")
+            )
+        )
+
+        ReviewSection(
+            title = "Comunicação",
+            questions = listOf(
+                "Recebo orientações claras e objetivas sobre minhas atividades e responsabilidades." to (comunicacao?.get("comunicacao1")?.toString() ?: ""),
+                "Sinto que posso me comunicar abertamente com minha liderança." to (comunicacao?.get("comunicacao2")?.toString() ?: ""),
+                "As informações importantes circulam de forma eficiente dentro da empresa." to (comunicacao?.get("comunicacao3")?.toString() ?: ""),
+                "Tenho clareza sobre as metas e os resultados esperados de mim." to (comunicacao?.get("comunicacao4")?.toString() ?: "")
+            )
+        )
+
+        ReviewSection(
+            title = "Relação com a Liderança",
+            questions = listOf(
+                "Minha liderança demonstra interesse pelo meu bem-estar no trabalho." to (relacaoLideranca?.get("lideranca1")?.toString() ?: ""),
+                "Minha liderança está disponível para me ouvir quando necessário." to (relacaoLideranca?.get("lideranca2")?.toString() ?: ""),
+                "Me sinto confortável para reportar problemas ou dificuldades ao meu líder." to (relacaoLideranca?.get("lideranca3")?.toString() ?: ""),
+                "Minha liderança reconhece minhas entregas e esforços." to (relacaoLideranca?.get("lideranca4")?.toString() ?: ""),
+                "Existe confiança e transparência na relação com minha liderança." to (relacaoLideranca?.get("lideranca5")?.toString() ?: "")
+            )
+        )
+    }
+}
